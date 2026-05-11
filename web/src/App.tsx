@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Shell } from "./components/Shell";
 import { HeroGreeting } from "./components/HeroGreeting";
 import { BrowseView } from "./components/BrowseView";
 import { QuizView } from "./components/QuizView";
 import { greetings } from "./data/greetings";
+import { useSpeech } from "./hooks/useSpeech";
 
 type Page = "home" | "browse" | "quiz" | "favorites";
 
@@ -39,6 +40,9 @@ const navItems = [
 export default function App() {
   const [page, setPage] = useState<Page>("home");
   const [data, setData] = useState<AppData>(loadData);
+  const { soundEnabled, toggleSound, speak, isSpeaking } = useSpeech();
+  const [speakingLangId, setSpeakingLangId] = useState<string | null>(null);
+  const speakingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     saveData(data);
@@ -66,16 +70,43 @@ export default function App() {
     }));
   }, []);
 
+  const handleSpeak = useCallback(
+    (text: string, langId: string) => {
+      speak(text, langId);
+      setSpeakingLangId(langId);
+      // Clear after a reasonable time (speech end is also tracked in the hook)
+      if (speakingTimeoutRef.current) clearTimeout(speakingTimeoutRef.current);
+      speakingTimeoutRef.current = setTimeout(() => setSpeakingLangId(null), 3000);
+    },
+    [speak]
+  );
+
+  // Sync speakingLangId with actual isSpeaking state
+  useEffect(() => {
+    if (!isSpeaking) {
+      setSpeakingLangId(null);
+    }
+  }, [isSpeaking]);
+
   return (
-    <Shell navItems={navItems} activeNav={page} onNavChange={(id) => setPage(id as Page)}>
+    <Shell
+      navItems={navItems}
+      activeNav={page}
+      onNavChange={(id) => setPage(id as Page)}
+      soundEnabled={soundEnabled}
+      onToggleSound={toggleSound}
+    >
       {page === "home" && (
         <div>
-          <HeroGreeting greetings={greetings} />
+          <HeroGreeting
+            greetings={greetings}
+            onSpeak={handleSpeak}
+            isSpeaking={isSpeaking}
+            soundEnabled={soundEnabled}
+          />
 
           {/* Stats */}
-          <div
-            className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-8"
-          >
+          <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-8">
             <div
               className="text-center p-4"
               style={{
@@ -125,6 +156,15 @@ export default function App() {
             </div>
           </div>
 
+          {/* Sound status hint */}
+          <div className="text-center mb-6">
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              {soundEnabled
+                ? "🔊 Sound is on — tap any greeting to hear it spoken"
+                : "🔇 Sound is off — tap the speaker icon to enable"}
+            </p>
+          </div>
+
           {/* Quick actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
             <button
@@ -153,7 +193,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Random greeting of the day */}
+          {/* Fun fact of the day */}
           <div
             className="max-w-md mx-auto p-5 text-center"
             style={{
@@ -177,6 +217,10 @@ export default function App() {
           greetings={greetings}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
+          onSpeak={handleSpeak}
+          isSpeaking={isSpeaking}
+          speakingLangId={speakingLangId}
+          soundEnabled={soundEnabled}
         />
       )}
 
@@ -185,6 +229,9 @@ export default function App() {
           greetings={greetings}
           onScoreUpdate={handleScoreUpdate}
           stats={{ correct: data.quizCorrect, total: data.quizTotal }}
+          onSpeak={handleSpeak}
+          isSpeaking={isSpeaking}
+          soundEnabled={soundEnabled}
         />
       )}
 
@@ -194,6 +241,10 @@ export default function App() {
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
           showFavoritesOnly
+          onSpeak={handleSpeak}
+          isSpeaking={isSpeaking}
+          speakingLangId={speakingLangId}
+          soundEnabled={soundEnabled}
         />
       )}
     </Shell>

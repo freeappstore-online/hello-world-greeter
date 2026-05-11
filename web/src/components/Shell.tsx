@@ -11,9 +11,18 @@ interface ShellProps {
   navItems?: NavItem[];
   activeNav?: string;
   onNavChange?: (id: string) => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
 }
 
-export function Shell({ children, navItems = [], activeNav, onNavChange }: ShellProps) {
+export function Shell({
+  children,
+  navItems = [],
+  activeNav,
+  onNavChange,
+  soundEnabled,
+  onToggleSound,
+}: ShellProps) {
   return (
     <>
       {/* Desktop */}
@@ -22,8 +31,21 @@ export function Shell({ children, navItems = [], activeNav, onNavChange }: Shell
           className="flex flex-col border-r h-full shrink-0"
           style={{ width: "17rem", borderColor: "var(--line)", background: "var(--panel)" }}
         >
-          <div className="p-6 font-bold text-lg" style={{ fontFamily: "Fraunces, serif" }}>
-            Hello World
+          <div className="p-6 flex items-center justify-between">
+            <span className="font-bold text-lg" style={{ fontFamily: "Fraunces, serif" }}>
+              Hello World
+            </span>
+            {onToggleSound && (
+              <button
+                onClick={onToggleSound}
+                className="p-1.5 transition-all duration-200 hover:scale-110"
+                style={{ borderRadius: "0.5rem" }}
+                aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
+                title={soundEnabled ? "Sound on — tap to mute" : "Sound off — tap to enable"}
+              >
+                <span className="text-lg">{soundEnabled ? "🔊" : "🔇"}</span>
+              </button>
+            )}
           </div>
           <nav className="flex-1 px-3 space-y-1">
             {navItems.map((item) => (
@@ -60,12 +82,22 @@ export function Shell({ children, navItems = [], activeNav, onNavChange }: Shell
       {/* Mobile */}
       <div className="flex flex-col h-screen md:hidden">
         <header
-          className="flex items-center px-4 h-14 border-b shrink-0"
+          className="flex items-center justify-between px-4 h-14 border-b shrink-0"
           style={{ borderColor: "var(--line)", background: "var(--panel)" }}
         >
           <span className="font-bold" style={{ fontFamily: "Fraunces, serif" }}>
             Hello World
           </span>
+          {onToggleSound && (
+            <button
+              onClick={onToggleSound}
+              className="p-1.5 transition-all duration-200 hover:scale-110"
+              style={{ borderRadius: "0.5rem" }}
+              aria-label={soundEnabled ? "Mute sounds" : "Enable sounds"}
+            >
+              <span className="text-lg">{soundEnabled ? "🔊" : "🔇"}</span>
+            </button>
+          )}
         </header>
         <main className="flex-1 overflow-auto p-4">{children}</main>
         <nav

@@ -1,13 +1,24 @@
 import { useState } from "react";
 import type { Greeting } from "../data/greetings";
+import { SpeakButton } from "./SpeakButton";
 
 interface GreetingCardProps {
   greeting: Greeting;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  onSpeak: (text: string, langId: string) => void;
+  isSpeaking: boolean;
+  soundEnabled: boolean;
 }
 
-export function GreetingCard({ greeting, isFavorite, onToggleFavorite }: GreetingCardProps) {
+export function GreetingCard({
+  greeting,
+  isFavorite,
+  onToggleFavorite,
+  onSpeak,
+  isSpeaking,
+  soundEnabled,
+}: GreetingCardProps) {
   const [showFact, setShowFact] = useState(false);
 
   return (
@@ -42,27 +53,42 @@ export function GreetingCard({ greeting, isFavorite, onToggleFavorite }: Greetin
           </button>
         </div>
 
-        {/* Greeting */}
-        <div
-          className="py-4 px-4 text-center mb-3"
+        {/* Greeting — tappable to speak */}
+        <button
+          onClick={() => onSpeak(greeting.greeting, greeting.id)}
+          className="w-full py-4 px-4 text-center mb-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           style={{
             background: "var(--paper)",
             borderRadius: "0.75rem",
             border: "1px solid var(--line)",
           }}
         >
-          <p
-            className="text-2xl font-bold mb-1"
-            style={{ fontFamily: "Fraunces, serif", color: "var(--ink)" }}
-          >
-            {greeting.greeting}
-          </p>
+          <div className="flex items-center justify-center gap-2">
+            <p
+              className="text-2xl font-bold"
+              style={{ fontFamily: "Fraunces, serif", color: "var(--ink)" }}
+            >
+              {greeting.greeting}
+            </p>
+            {soundEnabled && (
+              <SpeakButton
+                onClick={() => onSpeak(greeting.greeting, greeting.id)}
+                size="sm"
+                isSpeaking={isSpeaking}
+              />
+            )}
+          </div>
           {greeting.pronunciation && (
-            <p className="text-sm italic" style={{ color: "var(--muted)" }}>
+            <p className="text-sm italic mt-1" style={{ color: "var(--muted)" }}>
               {greeting.pronunciation}
             </p>
           )}
-        </div>
+          {soundEnabled && (
+            <p className="text-[10px] mt-1.5" style={{ color: "var(--muted)" }}>
+              Tap to hear
+            </p>
+          )}
+        </button>
 
         {/* Script badge */}
         <div className="flex items-center gap-2 mb-3">

@@ -1,11 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Greeting } from "../data/greetings";
+import { SpeakButton } from "./SpeakButton";
 
 interface HeroGreetingProps {
   greetings: Greeting[];
+  onSpeak: (text: string, langId: string) => void;
+  isSpeaking: boolean;
+  soundEnabled: boolean;
 }
 
-export function HeroGreeting({ greetings }: HeroGreetingProps) {
+export function HeroGreeting({ greetings, onSpeak, isSpeaking, soundEnabled }: HeroGreetingProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -24,6 +28,10 @@ export function HeroGreeting({ greetings }: HeroGreetingProps) {
 
   const current = greetings[currentIndex];
 
+  const handleTapGreeting = () => {
+    onSpeak(current.greeting, current.id);
+  };
+
   return (
     <div className="text-center py-8 md:py-12">
       <p className="text-sm font-medium mb-3" style={{ color: "var(--muted)" }}>
@@ -38,20 +46,45 @@ export function HeroGreeting({ greetings }: HeroGreetingProps) {
         }}
       >
         <span className="text-5xl md:text-6xl block mb-3">{current.flag}</span>
-        <h2
-          className="text-4xl md:text-6xl font-bold mb-2"
-          style={{ fontFamily: "Fraunces, serif", color: "var(--ink)" }}
+
+        {/* Tappable greeting */}
+        <button
+          onClick={handleTapGreeting}
+          className="transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          style={{ background: "transparent", border: "none" }}
         >
-          {current.greeting}
-        </h2>
-        {current.pronunciation && (
-          <p className="text-lg italic mb-1" style={{ color: "var(--muted)" }}>
-            {current.pronunciation}
-          </p>
-        )}
-        <p className="text-sm font-medium" style={{ color: "var(--accent)" }}>
+          <h2
+            className="text-4xl md:text-6xl font-bold mb-2"
+            style={{ fontFamily: "Fraunces, serif", color: "var(--ink)" }}
+          >
+            {current.greeting}
+          </h2>
+        </button>
+
+        <div className="flex items-center justify-center gap-2">
+          {current.pronunciation && (
+            <p className="text-lg italic" style={{ color: "var(--muted)" }}>
+              {current.pronunciation}
+            </p>
+          )}
+          {soundEnabled && (
+            <SpeakButton
+              onClick={handleTapGreeting}
+              size="md"
+              isSpeaking={isSpeaking}
+            />
+          )}
+        </div>
+
+        <p className="text-sm font-medium mt-1" style={{ color: "var(--accent)" }}>
           {current.language}
         </p>
+
+        {soundEnabled && (
+          <p className="text-[11px] mt-1" style={{ color: "var(--muted)" }}>
+            Tap the greeting to hear it
+          </p>
+        )}
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-2">

@@ -7,6 +7,10 @@ interface BrowseViewProps {
   favorites: Set<string>;
   onToggleFavorite: (id: string) => void;
   showFavoritesOnly?: boolean;
+  onSpeak: (text: string, langId: string) => void;
+  isSpeaking: boolean;
+  speakingLangId: string | null;
+  soundEnabled: boolean;
 }
 
 const SCRIPTS = [
@@ -28,7 +32,16 @@ function getScriptGroup(script: string): string {
   return "Other";
 }
 
-export function BrowseView({ greetings, favorites, onToggleFavorite, showFavoritesOnly }: BrowseViewProps) {
+export function BrowseView({
+  greetings,
+  favorites,
+  onToggleFavorite,
+  showFavoritesOnly,
+  onSpeak,
+  isSpeaking,
+  speakingLangId,
+  soundEnabled,
+}: BrowseViewProps) {
   const [search, setSearch] = useState("");
   const [scriptFilter, setScriptFilter] = useState("All");
 
@@ -125,6 +138,9 @@ export function BrowseView({ greetings, favorites, onToggleFavorite, showFavorit
               greeting={g}
               isFavorite={favorites.has(g.id)}
               onToggleFavorite={onToggleFavorite}
+              onSpeak={onSpeak}
+              isSpeaking={isSpeaking && speakingLangId === g.id}
+              soundEnabled={soundEnabled}
             />
           ))}
         </div>

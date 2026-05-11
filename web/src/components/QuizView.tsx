@@ -1,10 +1,14 @@
 import { useState, useCallback, useMemo } from "react";
 import type { Greeting } from "../data/greetings";
+import { SpeakButton } from "./SpeakButton";
 
 interface QuizViewProps {
   greetings: Greeting[];
   onScoreUpdate: (correct: boolean) => void;
   stats: { correct: number; total: number };
+  onSpeak: (text: string, langId: string) => void;
+  isSpeaking: boolean;
+  soundEnabled: boolean;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -16,7 +20,7 @@ function shuffleArray<T>(arr: T[]): T[] {
   return shuffled;
 }
 
-export function QuizView({ greetings, onScoreUpdate, stats }: QuizViewProps) {
+export function QuizView({ greetings, onScoreUpdate, stats, onSpeak, isSpeaking, soundEnabled }: QuizViewProps) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -77,16 +81,38 @@ export function QuizView({ greetings, onScoreUpdate, stats }: QuizViewProps) {
         <p className="text-sm mb-2" style={{ color: "var(--muted)" }}>
           Which language says...
         </p>
-        <p
-          className="text-3xl md:text-4xl font-bold mb-1"
-          style={{ fontFamily: "Fraunces, serif" }}
+
+        {/* Tappable greeting in quiz */}
+        <button
+          onClick={() => onSpeak(currentQ.greeting.greeting, currentQ.greeting.id)}
+          className="transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          style={{ background: "transparent", border: "none" }}
         >
-          {currentQ.greeting.greeting}
-        </p>
+          <p
+            className="text-3xl md:text-4xl font-bold mb-1"
+            style={{ fontFamily: "Fraunces, serif", color: "var(--ink)" }}
+          >
+            {currentQ.greeting.greeting}
+          </p>
+        </button>
+
         {currentQ.greeting.pronunciation && (
           <p className="text-sm italic" style={{ color: "var(--muted)" }}>
             {currentQ.greeting.pronunciation}
           </p>
+        )}
+
+        {soundEnabled && (
+          <div className="mt-2 flex items-center justify-center gap-1">
+            <SpeakButton
+              onClick={() => onSpeak(currentQ.greeting.greeting, currentQ.greeting.id)}
+              size="md"
+              isSpeaking={isSpeaking}
+            />
+            <span className="text-[11px]" style={{ color: "var(--muted)" }}>
+              Listen
+            </span>
+          </div>
         )}
       </div>
 
