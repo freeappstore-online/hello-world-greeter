@@ -7,5 +7,6 @@
     "preview": "pnpm --filter @hello-world-greeter/web preview",
     "typecheck": "pnpm --filter @hello-world-greeter/web exec tsc -b",
     "test": "pnpm --filter @hello-world-greeter/web test"
-  }
+  },
+  "packageManager": "pnpm@10.30.3"
 }
